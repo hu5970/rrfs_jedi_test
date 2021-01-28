@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE workflow [
+
+<!ENTITY ACCOUNT "rtrr">
+<!ENTITY QUEUE "batch">
+<!ENTITY PARTITION "kjet">
+<!ENTITY MACHINE    "jet">
+<!ENTITY SCHEDULER "slurm">
+
+<!ENTITY HOMEBASE_DIR "/mnt/lfs4/BMC/rtwbl/mhu/jedi/system">
+<!ENTITY DATABASE_DIR "/mnt/lfs4/BMC/rtwbl/mhu/jedi/run">
+<!ENTITY RRFS_DIR     "/mnt/lfs4/BMC/nrtrr/NCO_dirs/stmp/tmpnwprd/RRFS_dev2">
+<!ENTITY OBS_DIR      "/public/data">
+
+<!ENTITY SCRIPT_ROOT  "&HOMEBASE_DIR;/scripts">
+<!ENTITY EXEC_ROOT    "&HOMEBASE_DIR;/exec/JEDI">
+<!ENTITY JJOB_DIR     "&HOMEBASE_DIR;/jobs">
+<!ENTITY FIX_ROOT     "&STATIC_DIR;/GSI">
+<!ENTITY PREPBUFR_DIR "&OBS_DIR;/grids/rap/obs">
+
+<!ENTITY SYSTEM_ID "RRFS_3D"> 
+<!ENTITY JOBNAME_PRE "RRFS_reg">
+
+<!ENTITY MODULE_DIR "/home/rtrr/PARM_EXEC/modulefiles">
+<!ENTITY MODULE_FILE "&MODULE_DIR;/modulefile.jet.RAPHRRR">
+
+<!ENTITY LOG_DIR "&DATABASE_DIR;/log">
+<!ENTITY DATAROOT "&DATABASE_DIR;/cycle">
+
+<!ENTITY CLEAN_PROC "1">
+<!ENTITY IODACONVERTOR_PROC "4">
+
+<!ENTITY START_TIME_IODA "02:15:00">
+
+<!ENTITY DEADLINE_PP "06:00:00">
+<!ENTITY WALL_LIMIT_PP '<deadline><cyclestr offset="&DEADLINE_PP;">@Y@m@d@H@M</cyclestr></deadline>'>
+<!ENTITY IODA_RESOURCES "<walltime>00:10:00</walltime>">
+<!ENTITY RESERVATION '<native>--mail-type=NONE</native><queue>&QUEUE;</queue><account>&ACCOUNT;</account><partition>&PARTITION;</partition>'>
+
+<!ENTITY COMMONVARS
+   '<envar>
+      <name>MACHINE</name>
+      <value>&MACHINE;</value>
+    </envar>
+    <envar>
+      <name>SCHEDULER</name>
+      <value>&SCHEDULER;</value>
+    </envar>
+    <envar>
+      <name>jlogfile</name>
+      <value>&LOG_DIR;/jlogfiles</value>
+    </envar>
+'>
+
+]>
+
+<workflow realtime="T" scheduler="slurm" cyclethrottle="3" cyclelifespan="1:00:00:00">
+
+  <log>
+    <cyclestr>&LOG_DIR;/workflow_@Y@m@d@H.log</cyclestr>
+  </log>
+
+  <cycledef group="dacycle">00 00,03,06,09,12,15,18,21 28-29 01 2021 *</cycledef>
+
+<!--
+  <task name="RAP_clean" cycledefs="03hr" maxtries="1">
+
+    &CLEAN_RESOURCES;
+    &WALL_LIMIT_PP;
+    &RESERVATION;
+
+    <command>&SCRIPTS;/GSI/clean.ksh</command>
+    <cores>&CLEAN_PROC;</cores>
+    <jobname><cyclestr>RAP_clean_@H</cyclestr></jobname>
+    <join><cyclestr>&LOG_DIR;/clean_@Y@m@d@H00.log</cyclestr></join>
+
+    <envar>
+      <name>MODULE_FILE</name>
+      <value>&MODULE_FILE;</value>
+    </envar>
+    <envar>
+      <name>WORK_ROOT</name>
+      <value>&DATABASE_DIR;</value>
+    </envar>
+    <envar>
+      <name>CYCLE_HOUR</name>
+      <value><cyclestr>@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>OLDEST_RUNDIR_HOURS</name>
+      <value>&OLDEST_RUNDIR_HOURS;</value>
+    </envar>
+
+  </task>
+
+-->
+  <task name="ioda_convertor" cycledefs="dacycle" maxtries="2">
+
+    &IODA_RESOURCES;
+    &WALL_LIMIT_PP;
+    &RESERVATION;
+
+    <command>&JJOB_DIR;/launch.ksh &JJOB_DIR;/JRRFS_IODA_CONVERT</command>
+    <cores>&IODACONVERTOR_PROC;</cores>
+    <jobname><cyclestr>&JOBNAME_PRE;_ioda_convert_@H</cyclestr></jobname>
+    <join><cyclestr>&LOG_DIR;/ioda_convert_@Y@m@d@H00.log</cyclestr></join>
+
+    &COMMONVARS;
+    <envar>
+      <name>SYSTEM_ID</name>
+      <value>&SYSTEM_ID;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>SCRIPT_ROOT</name>
+      <value>&SCRIPT_ROOT;</value>
+    </envar>
+    <envar>
+      <name>EXEC_ROOT</name>
+      <value>&EXEC_ROOT;</value>
+    </envar>
+    <envar>
+      <name>GSIDATAHOME</name>
+      <value><cyclestr>&DATAROOT;/@Y@m@d@H/ANAL_GSI</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATAHOME</name>
+      <value><cyclestr>&DATAROOT;/@Y@m@d@H/ioda_obs </cyclestr></value>
+    </envar>
+
+    <dependency>
+       <timedep><cyclestr offset="&START_TIME_IODA;">@Y@m@d@H@M00</cyclestr></timedep>
+    </dependency>
+
+  </task>
+
+<!--
+  <task name="wrf_arw_3drtma_small" cycledefs="12hrsmall" maxtries="2">
+
+    &WRF_ARW_RESOURCES;
+    &WALL_LIMIT_PCYC;
+    &RESERVATION_PRE;
+
+    <command>&SCRIPTS;/WRF/rtma3d_wrf_arw_small.ksh</command>
+    <cores>&JEDI_HOFX_PROC;</cores>
+    <jobname><cyclestr>&JOBNAME_PRE;_wrf_arw_3drtma_@H</cyclestr></jobname>
+    <join><cyclestr>&LOG_DIR;/wrf_3drtma_arw_@Y@m@d@H00.log</cyclestr></join>
+
+    <envar>
+      <name>MODULE_FILE</name>
+      <value>&MODULE_FILE;</value>
+    </envar>
+    <envar>
+      <name>START_TIME</name>
+      <value><cyclestr>@Y@m@d@H</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATABASE_DIR</name>
+      <value>&DATABASE_DIR;</value>
+    </envar>
+    <envar>
+      <name>FULLCYC</name>
+      <value>1</value>
+    </envar>
+    <envar>
+      <name>FCST_LENGTH</name>
+      <value>&FCST_LENGTH_HRRR;</value>
+    </envar>
+    <envar>
+      <name>FCST_INTERVAL</name>
+      <value>&FCST_INTERVAL;</value>
+    </envar>
+    <envar>
+      <name>WRF_ROOT</name>
+      <value>&WRF_ROOT;</value>
+    </envar>
+    <envar>
+      <name>JEDI_ROOT</name>
+      <value>&JEDI_ROOT;</value>
+    </envar>
+    <envar>
+      <name>STATIC_DIR</name>
+      <value>&STATIC_DIR;/WRF</value>
+    </envar>
+    <envar>
+      <name>STATIC_DIR_JEDI</name>
+      <value>&STATIC_DIR;/JEDI</value>
+    </envar>
+    <envar>
+      <name>DATAROOT</name>
+      <value>&DATAROOT;</value>
+    </envar>
+    <envar>
+      <name>DATAIODAHOME</name>
+      <value><cyclestr>&DATAROOT;/@Y@m@d@H/ioda_obs</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATAHOME</name>
+      <value><cyclestr>&DATAROOT;/@Y@m@d@H/wrfprd</cyclestr></value>
+    </envar>
+    <envar>
+      <name>DATAHOME_BC</name>
+      <value><cyclestr>&DATAROOT;/@Y@m@d@H/wrfprd_bc</cyclestr></value>
+    </envar>
+
+    <dependency>
+      <and>
+        <taskdep task="ioda_convertor"/>
+      </and>
+    </dependency>
+
+  </task>
+
+-->
+</workflow>
