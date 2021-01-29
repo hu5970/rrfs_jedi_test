@@ -2,10 +2,10 @@
 
 <!DOCTYPE workflow [
 
-<!ENTITY ACCOUNT "rtrr">
-<!ENTITY QUEUE "batch">
-<!ENTITY PARTITION "kjet">
-<!ENTITY MACHINE    "jet">
+<!ENTITY ACCOUNT   "rtrr">
+<!ENTITY QUEUE     "batch">
+<!ENTITY PARTITION "sjet,vjet,kjet,xjet">
+<!ENTITY MACHINE   "jet">
 <!ENTITY SCHEDULER "slurm">
 
 <!ENTITY HOMEBASE_DIR "/mnt/lfs4/BMC/rtwbl/mhu/jedi/system">
@@ -14,7 +14,7 @@
 <!ENTITY OBS_DIR      "/public/data">
 
 <!ENTITY SCRIPT_ROOT  "&HOMEBASE_DIR;/scripts">
-<!ENTITY EXEC_ROOT    "&HOMEBASE_DIR;/exec/JEDI">
+<!ENTITY EXEC_ROOT    "&HOMEBASE_DIR;/exec">
 <!ENTITY JJOB_DIR     "&HOMEBASE_DIR;/jobs">
 <!ENTITY FIX_ROOT     "&STATIC_DIR;/GSI">
 <!ENTITY PREPBUFR_DIR "&OBS_DIR;/grids/rap/obs">
@@ -22,8 +22,8 @@
 <!ENTITY SYSTEM_ID "RRFS_3D"> 
 <!ENTITY JOBNAME_PRE "RRFS_reg">
 
-<!ENTITY MODULE_DIR "/home/rtrr/PARM_EXEC/modulefiles">
-<!ENTITY MODULE_FILE "&MODULE_DIR;/modulefile.jet.RAPHRRR">
+<!ENTITY MODULE_DIR "&HOMEBASE_DIR;/modulefiles">
+<!ENTITY MODULE_FILE "modulefile.rtma3d.jet">
 
 <!ENTITY LOG_DIR "&DATABASE_DIR;/log">
 <!ENTITY DATAROOT "&DATABASE_DIR;/cycle">
@@ -42,6 +42,10 @@
    '<envar>
       <name>MACHINE</name>
       <value>&MACHINE;</value>
+    </envar>
+    <envar>
+      <name>MODULEFILES</name>
+      <value>&MODULE_DIR;/&MODULE_FILE;</value>
     </envar>
     <envar>
       <name>SCHEDULER</name>
@@ -125,7 +129,7 @@
     </envar>
     <envar>
       <name>GSIDATAHOME</name>
-      <value><cyclestr>&DATAROOT;/@Y@m@d@H/ANAL_GSI</cyclestr></value>
+      <value><cyclestr>&RRFS_DIR;/@Y@m@d@H/ANAL_GSI</cyclestr></value>
     </envar>
     <envar>
       <name>DATAHOME</name>

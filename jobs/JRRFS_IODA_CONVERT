@@ -17,7 +17,7 @@ set -x
 # Execute the script.
 ######################
 # ${exSCR_GSI_HYB:-$HOMErtma3d/scripts/${RUN}/ex${RUN}_gsi_hyb.ksh}
-${HOMErtma3d}/scripts/exrrfs_ioda_convertor.ksh
+${SCRIPT_ROOT}/exrrfs_ioda_convertor.ksh
 export err=$?; err_chk
 
 msg="$0 of $job completed normally"

@@ -18,7 +18,7 @@ if [ "${MACHINE}" = "jet" ] ; then
 # loading modules in the general module file
 #  (also including path definition of some common UNIX commands)
 
-  . ${MODULEFILES}/modulefile.rtma3d.${MACHINE}
+  . ${MODULEFILES}
 
 # loading  Specific modules and configurations used in individual task 
 #   and path to some specific command/tool used

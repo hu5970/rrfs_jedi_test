@@ -4,11 +4,6 @@
 #   in jobs/launch.sh and/or modulefile
 set -x
 
-CATEXEC=${GSI_ROOT}/nc_diag_cat_serial.x
-
-netcdf_diag=${netcdf_diag:-".true."}
-binary_diag=${binary_diag:-".true."}
-
 # Make sure DATAHOME is defined and exists
 if [ ! "${SYSTEM_ID}" ]; then
   ${ECHO} "ERROR: $SYSTEM_ID is not defined!"
@@ -53,8 +48,8 @@ HH=`${DATE} +"%H" -d "${START_TIME}"`
 
 # Create the working directory and cd into it
 workdir=${DATAHOME}
-${RM} -rf ${workdir}
-${MKDIR} -p ${workdir}
+rm -rf ${workdir}
+mkdir -p ${workdir}
 cd ${workdir}
 
   mkdir ncdiagges
@@ -63,20 +58,20 @@ cd ${workdir}
   cp ${GSIDATAHOME}/ncdiag_*_ges.nc4.* ./ncdiagges
 
   source /misc/whome/Guoqing.Ge/modulefile.python
-  python ${GSI_ROOT}/proc_gsi_ncdiag.py -o diag_ioda -g diag_geoval -n 4 ncdiagges
+  python ${EXEC_ROOT}/proc_gsi_ncdiag.py -o diag_ioda -g diag_geoval -n 4 ncdiagges
 
-  ${LS} diag_ioda/sfc_*_obs_${YYYYMMDDHH}.nc4 > filelist_obs
+  ls diag_ioda/sfc_*_obs_${YYYYMMDDHH}.nc4 > filelist_obs
   numobsfile=`more filelist_obs | wc -l`
   numobsfile=$((numobsfile - 3 ))
   if [[ ${numobsfile} -gt 1 ]]; then
-     python ${GSI_ROOT}/combine_conv.py -o ioda_sfc_${YYYYMMDDHH}.nc4 -g diag_geoval -i diag_ioda/sfc_*_obs_${YYYYMMDDHH}.nc4
+     python ${EXEC_ROOT}/combine_files.py -o ioda_sfc_${YYYYMMDDHH}.nc4 -g diag_geoval -i diag_ioda/sfc_*_obs_${YYYYMMDDHH}.nc4
   fi
 
-  ${LS} diag_ioda/sondes_*_obs_${YYYYMMDDHH}.nc4 > filelist_obs
+  ls diag_ioda/sondes_*_obs_${YYYYMMDDHH}.nc4 > filelist_obs
   numobsfile=`more filelist_obs | wc -l`
   numobsfile=$((numobsfile - 3 ))
   if [[ ${numobsfile} -gt 1 ]]; then
-     python ${GSI_ROOT}/combine_conv.py -o ioda_sondes_${YYYYMMDDHH}.nc4 -g diag_geoval -i diag_ioda/sondes_*_obs_${YYYYMMDDHH}.nc4
+     python ${EXEC_ROOT}/combine_files.py -o ioda_sondes_${YYYYMMDDHH}.nc4 -g diag_geoval -i diag_ioda/sondes_*_obs_${YYYYMMDDHH}.nc4
   fi
 
 
